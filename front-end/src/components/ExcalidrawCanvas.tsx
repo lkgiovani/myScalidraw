@@ -1,11 +1,12 @@
 import React, { useCallback, useRef, useEffect, useState } from "react";
 import { Excalidraw } from "@excalidraw/excalidraw";
 import "@excalidraw/excalidraw/index.css";
-import { ExcalidrawFile } from "@/types/file";
+import { FileEntity } from "@/domain/entities/FileEntity";
+import { ExcalidrawData } from "@/domain/entities/ExcalidrawEntity";
 
 interface ExcalidrawCanvasProps {
-  file: ExcalidrawFile | undefined;
-  onSave: (id: string, data: any) => void;
+  file: FileEntity | undefined;
+  onSave: (id: string, data: ExcalidrawData) => void;
 }
 
 export const ExcalidrawCanvas: React.FC<ExcalidrawCanvasProps> = ({
@@ -44,7 +45,7 @@ export const ExcalidrawCanvas: React.FC<ExcalidrawCanvasProps> = ({
           errorMessage: null,
         };
 
-        const data = {
+        const data: ExcalidrawData = {
           elements,
           appState: constrainedAppState,
         };

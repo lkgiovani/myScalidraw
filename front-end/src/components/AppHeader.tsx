@@ -1,8 +1,8 @@
-import React from 'react';
-import { ExcalidrawFile } from '@/types/file';
+import React from "react";
+import { FileEntity } from "@/domain/entities/FileEntity";
 
 interface AppHeaderProps {
-  activeFile: ExcalidrawFile | undefined;
+  activeFile: FileEntity | undefined;
 }
 
 export const AppHeader: React.FC<AppHeaderProps> = ({ activeFile }) => {
@@ -14,13 +14,13 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ activeFile }) => {
           <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
           <div className="w-3 h-3 rounded-full bg-green-500"></div>
         </div>
-        
+
         <div className="w-px h-6 bg-border"></div>
-        
+
         <h1 className="text-sm font-medium text-foreground">
           React Excalidraw Editor
         </h1>
-        
+
         {activeFile && (
           <>
             <div className="w-px h-6 bg-border"></div>

@@ -35,7 +35,7 @@ const Home = () => {
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Uma ferramenta de desenho colaborativa e intuitiva baseada no
-            Excalidraw. Crie diagramas, wireframes e ilustrações de forma
+            Excalidraw. Cria diagramas, wireframes e ilustrações de forma
             simples e eficiente.
           </p>
         </div>
@@ -135,13 +135,18 @@ const Home = () => {
                 Acesse o editor e comece a criar seus desenhos e diagramas agora
                 mesmo.
               </p>
-              <div className="flex gap-4 justify-center">
+              <div className="flex flex-wrap gap-4 justify-center">
                 <Link to="/editor">
                   <Button size="lg" className="px-8">
                     Abrir Editor
                   </Button>
                 </Link>
-                <Button variant="outline" size="lg" className="px-8">
+                <Link to="/api-demo">
+                  <Button variant="outline" size="lg" className="px-8">
+                    Versão com API
+                  </Button>
+                </Link>
+                <Button variant="ghost" size="lg" className="px-8">
                   Ver Exemplos
                 </Button>
               </div>

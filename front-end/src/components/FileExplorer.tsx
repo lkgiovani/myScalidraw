@@ -1,29 +1,41 @@
-import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, FolderPlus, FilePlus, MoreHorizontal, File, Folder } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import React, { useState } from "react";
+import {
+  ChevronDown,
+  ChevronRight,
+  FolderPlus,
+  FilePlus,
+  MoreHorizontal,
+  File,
+  Folder,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { FileSystemItem, ExcalidrawFile, FileFolder } from '@/types/file';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/dropdown-menu";
+import {
+  FileEntity,
+  FileSystemItemEntity,
+  FolderEntity,
+} from "@/domain/entities/FileEntity";
+import { cn } from "@/lib/utils";
 
 interface FileExplorerProps {
-  files: FileSystemItem[];
+  files: FileSystemItemEntity[];
   activeFileId: string;
   onFileSelect: (id: string) => void;
-  onCreateFile: (name: string, parentId?: string) => void;
-  onCreateFolder: (name: string, parentId?: string) => void;
+  onCreateFile: (name: string, parentId?: string) => string | Promise<string>;
+  onCreateFolder: (name: string, parentId?: string) => string | Promise<string>;
   onRename: (id: string, newName: string) => void;
   onDelete: (id: string) => void;
   onToggleFolder: (id: string) => void;
 }
 
 interface FileItemProps {
-  item: FileSystemItem;
+  item: FileSystemItemEntity;
   level: number;
   isActive: boolean;
   activeFileId: string;
@@ -54,15 +66,15 @@ const FileItem: React.FC<FileItemProps> = ({
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleRename();
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       setIsRenaming(false);
       setRenameName(item.name);
     }
   };
 
-  const isFolder = 'isFolder' in item;
+  const isFolder = "isFolder" in item;
   const paddingLeft = level * 16 + 8;
 
   return (
@@ -70,7 +82,9 @@ const FileItem: React.FC<FileItemProps> = ({
       <div
         className={cn(
           "group flex items-center h-8 px-2 hover:bg-file-hover cursor-pointer transition-smooth relative",
-          isActive && !isFolder && "bg-primary/20 border-r-2 border-primary text-primary-foreground"
+          isActive &&
+            !isFolder &&
+            "bg-primary/20 border-r-2 border-primary text-primary-foreground"
         )}
         style={{ paddingLeft }}
         onClick={() => {
@@ -83,7 +97,7 @@ const FileItem: React.FC<FileItemProps> = ({
       >
         {isFolder ? (
           <>
-            {(item as FileFolder).isExpanded ? (
+            {(item as FolderEntity).isExpanded ? (
               <ChevronDown className="h-4 w-4 mr-1 text-muted-foreground" />
             ) : (
               <ChevronRight className="h-4 w-4 mr-1 text-muted-foreground" />
@@ -129,7 +143,7 @@ const FileItem: React.FC<FileItemProps> = ({
             <DropdownMenuItem onClick={() => setIsRenaming(true)}>
               Renomear
             </DropdownMenuItem>
-            <DropdownMenuItem 
+            <DropdownMenuItem
               onClick={() => onDelete(item.id)}
               className="text-destructive focus:text-destructive"
             >
@@ -139,9 +153,9 @@ const FileItem: React.FC<FileItemProps> = ({
         </DropdownMenu>
       </div>
 
-      {isFolder && (item as FileFolder).isExpanded && (
+      {isFolder && (item as FolderEntity).isExpanded && (
         <div className="animate-fade-in">
-          {(item as FileFolder).children.map((child) => (
+          {(item as FolderEntity).children.map((child) => (
             <FileItem
               key={child.id}
               item={child}
@@ -172,9 +186,12 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
 }) => {
   const [isCreatingFile, setIsCreatingFile] = useState(false);
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
-  const [newItemName, setNewItemName] = useState('');
+  const [newItemName, setNewItemName] = useState("");
 
-  const renderFileTree = (items: FileSystemItem[], level: number = 0): React.ReactNode => {
+  const renderFileTree = (
+    items: FileSystemItemEntity[],
+    level: number = 0
+  ): React.ReactNode => {
     return items.map((item) => (
       <FileItem
         key={item.id}
@@ -190,33 +207,33 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
     ));
   };
 
-  const handleCreateFile = () => {
+  const handleCreateFile = async () => {
     if (newItemName.trim()) {
-      onCreateFile(newItemName.trim());
-      setNewItemName('');
+      await onCreateFile(newItemName.trim());
+      setNewItemName("");
       setIsCreatingFile(false);
     }
   };
 
-  const handleCreateFolder = () => {
+  const handleCreateFolder = async () => {
     if (newItemName.trim()) {
-      onCreateFolder(newItemName.trim());
-      setNewItemName('');
+      await onCreateFolder(newItemName.trim());
+      setNewItemName("");
       setIsCreatingFolder(false);
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       if (isCreatingFile) {
         handleCreateFile();
       } else if (isCreatingFolder) {
         handleCreateFolder();
       }
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       setIsCreatingFile(false);
       setIsCreatingFolder(false);
-      setNewItemName('');
+      setNewItemName("");
     }
   };
 
@@ -224,7 +241,9 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
     <div className="h-full flex flex-col bg-sidebar-background border-r border-sidebar-border">
       <div className="p-3 border-b border-sidebar-border">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-sm font-semibold text-sidebar-foreground">Explorador</h2>
+          <h2 className="text-sm font-semibold text-sidebar-foreground">
+            Explorador
+          </h2>
           <div className="flex gap-1">
             <Button
               variant="ghost"
@@ -263,10 +282,8 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
       </div>
 
       <div className="flex-1 overflow-auto">
-        <div className="animate-fade-in">
-          {renderFileTree(files)}
-        </div>
-        
+        <div className="animate-fade-in">{renderFileTree(files)}</div>
+
         {files.length === 0 && (
           <div className="p-4 text-center text-muted-foreground text-sm">
             <p>Nenhum arquivo ainda.</p>
