@@ -1,16 +1,16 @@
 package fx
 
 import (
-	"go.uber.org/fx"
-
 	"myScalidraw/infra/config/environment"
 	"myScalidraw/infra/database"
 	"myScalidraw/infra/storage"
-	"myScalidraw/internal/delivery/handlers"
+	"myScalidraw/internal/delivery/handlers/fileHandlers"
 	"myScalidraw/internal/delivery/httpserver"
 	"myScalidraw/internal/domain/repository"
 	"myScalidraw/internal/domain/repository/impl"
 	"myScalidraw/internal/domain/useCase/file"
+
+	"go.uber.org/fx"
 )
 
 var ConfigModule = fx.Options(
@@ -75,14 +75,16 @@ var RepositoryModule = fx.Options(
 
 var UseCaseModule = fx.Options(
 	fx.Provide(
-		file.NewFileUseCase,
+		func(fileRepo repository.FileRepository, metadataRepo repository.FileMetadataRepository) *file.FileUseCase {
+			return file.NewFileUseCase(fileRepo, metadataRepo)
+		},
 	),
 )
 
 var HandlersModule = fx.Options(
-	fx.Provide(handlers.NewFileHandler),
+	fx.Provide(fileHandlers.NewFileHandler),
 	fx.Invoke(
-		func(server *httpserver.Server, fileHandler *handlers.FileHandler) {
+		func(server *httpserver.Server, fileHandler *fileHandlers.FileHandler) {
 			fileHandler.RegisterRoutes(server.App)
 		},
 	),

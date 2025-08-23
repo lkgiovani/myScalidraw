@@ -26,11 +26,8 @@ type Config struct {
 		UseSSL    bool
 	}
 	URL_SHORTENED_PREFIX string
-	REDIS                struct {
-		Address string
-	}
-	JWT_SECRET   string
-	FRONTEND_URL string
+	JWT_SECRET           string
+	FRONTEND_URL         string
 }
 
 func NewConfig() (*Config, error) {
@@ -76,11 +73,6 @@ func NewConfig() (*Config, error) {
 	}
 
 	urlShortenedPrefix, err := getString("URL_SHORTENED_PREFIX", "Error loading URL Shortened Prefix")
-	if err != nil {
-		return nil, err
-	}
-
-	redisAddress, err := getString("REDIS_ADDRESS", "Error loading Redis Address")
 	if err != nil {
 		return nil, err
 	}
@@ -157,13 +149,8 @@ func NewConfig() (*Config, error) {
 			UseSSL:    minioUseSSL,
 		},
 		URL_SHORTENED_PREFIX: urlShortenedPrefix,
-		REDIS: struct {
-			Address string
-		}{
-			Address: redisAddress,
-		},
-		JWT_SECRET:   jwtSecret,
-		FRONTEND_URL: frontendUrl,
+		JWT_SECRET:           jwtSecret,
+		FRONTEND_URL:         frontendUrl,
 	}, nil
 }
 

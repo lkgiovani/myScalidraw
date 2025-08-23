@@ -53,6 +53,6 @@ func (r *FileMetadataRepositoryImpl) Update(metadata *models.FileMetadata) error
 }
 
 func (r *FileMetadataRepositoryImpl) Delete(id string) error {
-	result := r.db.Delete(&models.FileMetadata{}, "id = ?", id)
+	result := r.db.Unscoped().Delete(&models.FileMetadata{}, "id = ?", id)
 	return result.Error
 }
