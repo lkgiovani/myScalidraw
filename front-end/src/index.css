@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Modern file explorer color palette */
+    --background: 0 0% 99%;
+    --foreground: 220 10% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 10% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 10% 15%;
+
+    /* File explorer primary - Modern blue */
+    --primary: 213 94% 68%;
+    --primary-foreground: 220 10% 98%;
+    --primary-hover: 213 94% 72%;
+    --primary-muted: 213 50% 95%;
+
+    /* File explorer secondary - Soft gray */
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 10% 30%;
+    --secondary-hover: 220 14% 92%;
+
+    /* File explorer surfaces */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 8% 46%;
+
+    --accent: 220 14% 93%;
+    --accent-foreground: 220 10% 25%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 213 94% 68%;
+
+    --radius: 0.75rem;
+
+    /* File explorer specific colors */
+    --explorer-sidebar: 220 14% 97%;
+    --explorer-sidebar-hover: 220 14% 93%;
+    --explorer-sidebar-active: 213 50% 95%;
+    --explorer-main: 0 0% 100%;
+    --explorer-border: 220 13% 91%;
+
+    /* File type colors */
+    --file-folder: 45 93% 47%;
+    --file-document: 213 94% 68%;
+    --file-image: 142 76% 47%;
+    --file-code: 262 83% 58%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(213 94% 68%), hsl(213 94% 72%));
+    --gradient-surface: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 14% 98%));
+
+    /* Shadows */
+    --shadow-soft: 0 2px 8px -2px hsl(220 10% 15% / 0.06);
+    --shadow-medium: 0 4px 16px -4px hsl(220 10% 15% / 0.1);
+    --shadow-active: 0 0 0 2px hsl(213 94% 68% / 0.2);
+
+    /* Transitions */
+    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Sidebar tokens */
+    --sidebar-background: 220 14% 97%;
+    --sidebar-foreground: 220 10% 30%;
+    --sidebar-primary: 213 94% 68%;
+    --sidebar-primary-foreground: 220 10% 98%;
+    --sidebar-accent: 220 14% 93%;
+    --sidebar-accent-foreground: 220 10% 25%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 213 94% 68%;
+  }
+
+  .dark {
+    /* Dark mode file explorer */
+    --background: 220 15% 8%;
+    --foreground: 220 10% 92%;
+
+    --card: 220 15% 10%;
+    --card-foreground: 220 10% 92%;
+
+    --popover: 220 15% 10%;
+    --popover-foreground: 220 10% 92%;
+
+    --primary: 213 94% 68%;
+    --primary-foreground: 220 15% 8%;
+    --primary-hover: 213 94% 72%;
+    --primary-muted: 213 50% 15%;
+
+    --secondary: 220 15% 15%;
+    --secondary-foreground: 220 10% 85%;
+    --secondary-hover: 220 15% 18%;
+
+    --muted: 220 15% 15%;
+    --muted-foreground: 220 8% 65%;
+
+    --accent: 220 15% 18%;
+    --accent-foreground: 220 10% 88%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 213 94% 68%;
+
+    /* Dark file explorer specific */
+    --explorer-sidebar: 220 15% 12%;
+    --explorer-sidebar-hover: 220 15% 18%;
+    --explorer-sidebar-active: 213 50% 15%;
+    --explorer-main: 220 15% 8%;
+    --explorer-border: 220 15% 20%;
+
+    /* Dark file type colors */
+    --file-folder: 45 93% 60%;
+    --file-document: 213 94% 75%;
+    --file-image: 142 76% 60%;
+    --file-code: 262 83% 70%;
+
+    /* Dark gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(213 94% 68%), hsl(213 94% 72%));
+    --gradient-surface: linear-gradient(180deg, hsl(220 15% 10%), hsl(220 15% 8%));
+
+    /* Dark shadows */
+    --shadow-soft: 0 2px 8px -2px hsl(220 15% 0% / 0.3);
+    --shadow-medium: 0 4px 16px -4px hsl(220 15% 0% / 0.4);
+    --shadow-active: 0 0 0 2px hsl(213 94% 68% / 0.3);
+
+    /* Dark sidebar */
+    --sidebar-background: 220 15% 12%;
+    --sidebar-foreground: 220 10% 85%;
+    --sidebar-primary: 213 94% 68%;
+    --sidebar-primary-foreground: 220 15% 8%;
+    --sidebar-accent: 220 15% 18%;
+    --sidebar-accent-foreground: 220 10% 88%;
+    --sidebar-border: 220 15% 20%;
+    --sidebar-ring: 213 94% 68%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
