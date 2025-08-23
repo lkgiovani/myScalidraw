@@ -9,4 +9,5 @@ type FileItem struct {
 	LastModified int64       `json:"lastModified,omitempty"`
 	ParentID     string      `json:"parentId,omitempty"`
 	IsExpanded   bool        `json:"isExpanded,omitempty"`
+	Path         string      `json:"path,omitempty"`
 }

@@ -1,6 +1,7 @@
 package fileHandlers
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -26,6 +27,7 @@ func (h *FileHandler) RegisterRoutes(app *fiber.App) {
 	api.Post("/files", h.CreateFile)
 	api.Post("/files/upload", h.UploadFile)
 	api.Put("/files/:id", h.SaveFile)
+	api.Put("/files/:id/rename", h.RenameFile)
 	api.Delete("/files/:id", h.DeleteFile)
 }
 
@@ -36,6 +38,7 @@ func (h *FileHandler) GetFiles(c *fiber.Ctx) error {
 
 func (h *FileHandler) GetFileByID(c *fiber.Ctx) error {
 	id := c.Params("id")
+
 	file, err := h.fileUseCase.GetFileByID(id)
 
 	if err != nil {
@@ -46,26 +49,96 @@ func (h *FileHandler) GetFileByID(c *fiber.Ctx) error {
 		return c.Status(http.StatusNotFound).JSON(fiber.Map{"error": "file not found"})
 	}
 
-	return c.JSON(file)
+	response := map[string]interface{}{
+		"id":           file.ID,
+		"name":         file.Name,
+		"isFolder":     file.IsFolder,
+		"parentId":     file.ParentID,
+		"lastModified": file.LastModified,
+		"path":         file.Path,
+	}
+
+	if !file.IsFolder && file.Data != nil {
+		if contentBytes, err := json.Marshal(file.Data); err == nil {
+			response["content"] = string(contentBytes)
+		}
+	}
+
+	return c.JSON(response)
 }
 
 func (h *FileHandler) SaveFile(c *fiber.Ctx) error {
 	id := c.Params("id")
 
+	fileContent := c.Body()
+	if len(fileContent) == 0 {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "empty file content"})
+	}
+
+	var jsonData map[string]interface{}
+	if err := json.Unmarshal(fileContent, &jsonData); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"error":   "content must be valid JSON",
+			"details": err.Error(),
+		})
+	}
+
+	if jsonData["type"] == nil {
+		jsonData["type"] = "excalidraw"
+	}
+	if jsonData["version"] == nil {
+		jsonData["version"] = 2
+	}
+	if jsonData["source"] == nil {
+		jsonData["source"] = "https://excalidraw.com"
+	}
+
+	validatedContent, err := json.Marshal(jsonData)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "error processing JSON"})
+	}
+
+	err = h.fileUseCase.SaveFile(id, string(validatedContent))
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "error saving file"})
+	}
+
+	updatedFile, err := h.fileUseCase.GetFileByID(id)
+	if err != nil {
+
+		return c.JSON(fiber.Map{"message": "file saved successfully"})
+	}
+
+	return c.JSON(updatedFile)
+}
+
+func (h *FileHandler) RenameFile(c *fiber.Ctx) error {
+	id := c.Params("id")
+
 	var request struct {
-		Content string `json:"content"`
+		Name string `json:"name"`
 	}
 
 	if err := c.BodyParser(&request); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "error parsing request body"})
 	}
 
-	err := h.fileUseCase.SaveFile(id, request.Content)
-	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "error saving file"})
+	if request.Name == "" {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "name is required"})
 	}
 
-	return c.JSON(fiber.Map{"message": "file saved successfully"})
+	err := h.fileUseCase.RenameFile(id, request.Name)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "error renaming file"})
+	}
+
+	updatedFile, err := h.fileUseCase.GetFileByID(id)
+	if err != nil {
+
+		return c.JSON(fiber.Map{"message": "file renamed successfully"})
+	}
+
+	return c.JSON(updatedFile)
 }
 
 func (h *FileHandler) DeleteFile(c *fiber.Ctx) error {

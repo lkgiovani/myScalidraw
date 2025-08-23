@@ -15,8 +15,10 @@ import (
 type CreateFileRequest struct {
 	Name        string `json:"name"`
 	ParentID    string `json:"parentId"`
+	ParentPath  string `json:"parentPath"`
 	IsFolder    bool   `json:"isFolder"`
 	ContentType string `json:"contentType"`
+	Content     string `json:"content"`
 }
 
 func (h *FileHandler) CreateFile(c *fiber.Ctx) error {
@@ -49,17 +51,21 @@ func (h *FileHandler) CreateFile(c *fiber.Ctx) error {
 
 	var content []byte
 	if !params.IsFolder {
-		defaultContent := map[string]interface{}{
-			"type":     "excalidraw",
-			"version":  2,
-			"source":   "https://excalidraw.com",
-			"elements": []interface{}{},
-			"appState": map[string]interface{}{
-				"viewBackgroundColor": "#ffffff",
-				"gridSize":            nil,
-			},
+		if params.Content != "" {
+			content = []byte(params.Content)
+		} else {
+			defaultContent := map[string]interface{}{
+				"type":     "excalidraw",
+				"version":  2,
+				"source":   "https://excalidraw.com",
+				"elements": []interface{}{},
+				"appState": map[string]interface{}{
+					"viewBackgroundColor": "#ffffff",
+					"gridSize":            nil,
+				},
+			}
+			content, _ = json.Marshal(defaultContent)
 		}
-		content, _ = json.Marshal(defaultContent)
 		metadata.Size = int64(len(content))
 	}
 
@@ -68,10 +74,18 @@ func (h *FileHandler) CreateFile(c *fiber.Ctx) error {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "error creating file"})
 	}
 
-	return c.JSON(fiber.Map{
-		"message": "file created successfully",
-		"id":      fileID,
-	})
+	response := map[string]interface{}{
+		"id":           metadata.ID,
+		"name":         metadata.Name,
+		"path":         "/" + metadata.Name,
+		"size":         metadata.Size,
+		"modified":     metadata.LastModified.Format(time.RFC3339),
+		"lastModified": metadata.LastModified.Unix() * 1000,
+		"isFolder":     metadata.IsFolder,
+		"parentId":     metadata.ParentID,
+	}
+
+	return c.JSON(response)
 }
 
 func (h *FileHandler) UploadFile(c *fiber.Ctx) error {
@@ -139,10 +153,16 @@ func (h *FileHandler) UploadFile(c *fiber.Ctx) error {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "error uploading file"})
 	}
 
-	return c.JSON(fiber.Map{
-		"message": "file uploaded successfully",
-		"id":      fileID,
-		"name":    fileName,
-		"size":    len(validatedContent),
-	})
+	response := map[string]interface{}{
+		"id":           metadata.ID,
+		"name":         metadata.Name,
+		"path":         "/" + metadata.Name,
+		"size":         metadata.Size,
+		"modified":     metadata.LastModified.Format(time.RFC3339),
+		"lastModified": metadata.LastModified.Unix() * 1000,
+		"isFolder":     metadata.IsFolder,
+		"parentId":     metadata.ParentID,
+	}
+
+	return c.JSON(response)
 }

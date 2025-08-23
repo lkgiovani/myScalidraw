@@ -11,4 +11,5 @@ type FileRepository interface {
 	GetFileContent(id string) (string, error)
 	UploadFile(id string, content []byte) error
 	DeleteFile(id string) error
+	RenameFile(id string, newName string) error
 }

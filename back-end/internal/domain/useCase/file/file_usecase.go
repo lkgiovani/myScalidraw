@@ -62,3 +62,7 @@ func (uc *FileUseCase) CreateFile(metadata *models.FileMetadata, content []byte)
 func (uc *FileUseCase) DeleteFile(id string) error {
 	return uc.fileRepo.DeleteFile(id)
 }
+
+func (uc *FileUseCase) RenameFile(id string, newName string) error {
+	return uc.fileRepo.RenameFile(id, newName)
+}

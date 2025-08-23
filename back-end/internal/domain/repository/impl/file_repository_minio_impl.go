@@ -3,6 +3,7 @@ package impl
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -82,17 +83,48 @@ func (r *FileRepositoryMinioImpl) GetFileByID(id string) *models.FileItem {
 
 	item := metadata.ToFileItem()
 
+	item.Path = r.buildItemPath(metadata)
+
 	if metadata.IsFolder {
 		children, err := r.metadataRepo.GetByParentID(id)
 		if err == nil {
 			for _, child := range children {
 				childItem := child.ToFileItem()
+				childItem.Path = r.buildItemPath(child)
 				item.Children = append(item.Children, childItem)
 			}
 		}
 	}
 
 	return &item
+}
+
+func (r *FileRepositoryMinioImpl) buildItemPath(metadata *models.FileMetadata) string {
+	var pathParts []string
+	current := metadata
+
+	for current != nil && current.ParentID != "" {
+		parent, err := r.metadataRepo.GetByID(current.ParentID)
+		if err == nil {
+			pathParts = append([]string{parent.Name}, pathParts...)
+			current = parent
+		} else {
+			break
+		}
+	}
+
+	if len(pathParts) == 0 {
+		return "/"
+	}
+
+	result := "/"
+	for i, part := range pathParts {
+		if i > 0 {
+			result += "/"
+		}
+		result += part
+	}
+	return result
 }
 
 func (r *FileRepositoryMinioImpl) SaveFile(id string, content string) error {
@@ -180,6 +212,30 @@ func (r *FileRepositoryMinioImpl) DeleteFile(id string) error {
 	err = r.metadataRepo.Delete(id)
 	if err != nil {
 		return fmt.Errorf("error deleting metadata: %w", err)
+	}
+
+	return nil
+}
+
+func (r *FileRepositoryMinioImpl) RenameFile(id string, newName string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	metadata, err := r.metadataRepo.GetByID(id)
+	if err != nil {
+		return fmt.Errorf("file not found: %s", id)
+	}
+
+	if !metadata.IsFolder && !strings.HasSuffix(newName, ".excalidraw") {
+		newName = strings.TrimSuffix(newName, ".json") + ".excalidraw"
+	}
+
+	metadata.Name = newName
+	metadata.UpdatedAt = time.Now()
+
+	err = r.metadataRepo.Update(metadata)
+	if err != nil {
+		return fmt.Errorf("error updating metadata: %w", err)
 	}
 
 	return nil

@@ -27,6 +27,7 @@ func (fm *FileMetadata) ToFileItem() FileItem {
 		IsFolder:     fm.IsFolder,
 		ParentID:     fm.ParentID,
 		LastModified: fm.LastModified.Unix() * 1000,
+		Path:         fm.StoragePath,
 	}
 }
 
@@ -35,10 +36,35 @@ type FileMetadataList []*FileMetadata
 func (list FileMetadataList) ToFileSystem() []FileItem {
 
 	itemMap := make(map[string]*FileItem)
+	metadataMap := make(map[string]*FileMetadata)
 
 	for _, metadata := range list {
 		item := metadata.ToFileItem()
 		itemMap[item.ID] = &item
+		metadataMap[metadata.ID] = metadata
+	}
+
+	buildPath := func(itemID string) string {
+		var pathParts []string
+		current := metadataMap[itemID]
+
+		for current != nil && current.ParentID != "" {
+			if parent, exists := metadataMap[current.ParentID]; exists {
+				pathParts = append([]string{parent.Name}, pathParts...)
+				current = parent
+			} else {
+				break
+			}
+		}
+
+		if len(pathParts) == 0 {
+			return "/"
+		}
+		return "/" + joinPath(pathParts)
+	}
+
+	for id, item := range itemMap {
+		item.Path = buildPath(id)
 	}
 
 	var rootItems []FileItem
@@ -64,4 +90,19 @@ func (list FileMetadataList) ToFileSystem() []FileItem {
 	}
 
 	return rootItems
+}
+
+func joinPath(parts []string) string {
+	if len(parts) == 0 {
+		return ""
+	}
+	if len(parts) == 1 {
+		return parts[0]
+	}
+
+	result := parts[0]
+	for i := 1; i < len(parts); i++ {
+		result += "/" + parts[i]
+	}
+	return result
 }
