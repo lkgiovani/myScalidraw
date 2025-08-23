@@ -39,11 +39,11 @@ func (h *FileHandler) GetFileByID(c *fiber.Ctx) error {
 	file, err := h.fileUseCase.GetFileByID(id)
 
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "erro ao buscar arquivo"})
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "error fetching file"})
 	}
 
 	if file == nil {
-		return c.Status(http.StatusNotFound).JSON(fiber.Map{"error": "arquivo não encontrado"})
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{"error": "file not found"})
 	}
 
 	return c.JSON(file)
@@ -57,15 +57,15 @@ func (h *FileHandler) SaveFile(c *fiber.Ctx) error {
 	}
 
 	if err := c.BodyParser(&request); err != nil {
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "erro ao parsear corpo da requisição"})
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "error parsing request body"})
 	}
 
 	err := h.fileUseCase.SaveFile(id, request.Content)
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "erro ao salvar arquivo"})
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "error saving file"})
 	}
 
-	return c.JSON(fiber.Map{"message": "arquivo salvo com sucesso"})
+	return c.JSON(fiber.Map{"message": "file saved successfully"})
 }
 
 func (h *FileHandler) DeleteFile(c *fiber.Ctx) error {
@@ -73,8 +73,8 @@ func (h *FileHandler) DeleteFile(c *fiber.Ctx) error {
 
 	err := h.fileUseCase.DeleteFile(id)
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "erro ao deletar arquivo"})
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "error deleting file"})
 	}
 
-	return c.JSON(fiber.Map{"message": "arquivo deletado com sucesso"})
+	return c.JSON(fiber.Map{"message": "file deleted successfully"})
 }

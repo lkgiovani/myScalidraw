@@ -22,12 +22,12 @@ type CreateFileRequest struct {
 func (h *FileHandler) CreateFile(c *fiber.Ctx) error {
 	var params CreateFileRequest
 	if err := c.BodyParser(&params); err != nil {
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "erro ao parsear corpo da requisição"})
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "error parsing request body"})
 	}
 
 	fileID, err := uuid.GenerateUUID()
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "erro ao gerar UUID"})
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "error generating UUID"})
 	}
 
 	fileName := params.Name
@@ -65,11 +65,11 @@ func (h *FileHandler) CreateFile(c *fiber.Ctx) error {
 
 	err = h.fileUseCase.CreateFile(metadata, content)
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "erro ao criar arquivo"})
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "error creating file"})
 	}
 
 	return c.JSON(fiber.Map{
-		"message": "arquivo criado com sucesso",
+		"message": "file created successfully",
 		"id":      fileID,
 	})
 }
@@ -77,13 +77,13 @@ func (h *FileHandler) CreateFile(c *fiber.Ctx) error {
 func (h *FileHandler) UploadFile(c *fiber.Ctx) error {
 	fileContent := c.Body()
 	if len(fileContent) == 0 {
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "arquivo vazio ou não encontrado"})
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "empty or not found file"})
 	}
 
 	var jsonData map[string]interface{}
 	if err := json.Unmarshal(fileContent, &jsonData); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
-			"error":   "conteúdo deve ser JSON válido",
+			"error":   "content must be valid JSON",
 			"details": err.Error(),
 		})
 	}
@@ -100,7 +100,7 @@ func (h *FileHandler) UploadFile(c *fiber.Ctx) error {
 
 	validatedContent, err := json.Marshal(jsonData)
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "erro ao processar JSON"})
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "error processing JSON"})
 	}
 
 	fileName := c.Get("X-File-Name")
@@ -112,14 +112,14 @@ func (h *FileHandler) UploadFile(c *fiber.Ctx) error {
 
 	parentID := c.Query("parentId")
 	if parentID == "" {
-		parentID = "rascunhos"
+		parentID = "drafts"
 	}
 
 	contentType := "application/vnd.excalidraw+json"
 
 	fileID, err := uuid.GenerateUUID()
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "erro ao gerar UUID"})
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "error generating UUID"})
 	}
 
 	metadata := &models.FileMetadata{
@@ -136,11 +136,11 @@ func (h *FileHandler) UploadFile(c *fiber.Ctx) error {
 
 	err = h.fileUseCase.CreateFile(metadata, validatedContent)
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "erro ao fazer upload do arquivo"})
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "error uploading file"})
 	}
 
 	return c.JSON(fiber.Map{
-		"message": "arquivo enviado com sucesso",
+		"message": "file uploaded successfully",
 		"id":      fileID,
 		"name":    fileName,
 		"size":    len(validatedContent),

@@ -23,7 +23,6 @@ func NewServer(port int) *Server {
 		IdleTimeout:  120 * time.Second,
 	})
 
-	// Configurar CORS antes de qualquer rota
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     "*",
 		AllowMethods:     "GET,POST,PUT,DELETE,PATCH,OPTIONS",

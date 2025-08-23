@@ -35,12 +35,12 @@ func NewFileRepositoryMinio(minioClient *storage.MinIO, db *database.DB, metadat
 func (r *FileRepositoryMinioImpl) loadFileSystem() {
 	metadata, err := r.metadataRepo.GetAll()
 	if err != nil {
-		fmt.Printf("Erro ao carregar metadados: %v\n", err)
+		fmt.Printf("Error loading metadata: %v\n", err)
 
 		r.fileSystem = []models.FileItem{
 			{
-				ID:         "rascunhos",
-				Name:       "Rascunhos",
+				ID:         "drafts",
+				Name:       "Drafts",
 				IsFolder:   true,
 				IsExpanded: true,
 				Children:   []models.FileItem{},
@@ -101,7 +101,7 @@ func (r *FileRepositoryMinioImpl) SaveFile(id string, content string) error {
 
 	metadata, err := r.metadataRepo.GetByID(id)
 	if err != nil {
-		return fmt.Errorf("arquivo não encontrado: %s", id)
+		return fmt.Errorf("file not found: %s", id)
 	}
 
 	now := time.Now()
@@ -112,12 +112,12 @@ func (r *FileRepositoryMinioImpl) SaveFile(id string, content string) error {
 
 	err = r.metadataRepo.Update(metadata)
 	if err != nil {
-		return fmt.Errorf("erro ao atualizar metadados: %w", err)
+		return fmt.Errorf("error updating metadata: %w", err)
 	}
 
 	_, err = r.minioClient.UploadFile(id, []byte(content))
 	if err != nil {
-		return fmt.Errorf("erro ao salvar arquivo no MinIO: %w", err)
+		return fmt.Errorf("error saving file to MinIO: %w", err)
 	}
 
 	return nil
@@ -129,17 +129,17 @@ func (r *FileRepositoryMinioImpl) GetFileContent(id string) (string, error) {
 		if id == "exemplo-salve" {
 			localContent, localErr := loadLocalExcalidrawFile()
 			if localErr != nil {
-				return "", fmt.Errorf("erro ao carregar arquivo: %w", err)
+				return "", fmt.Errorf("error loading file: %w", err)
 			}
 
 			_, uploadErr := r.minioClient.UploadFile(id, []byte(localContent))
 			if uploadErr != nil {
-				return "", fmt.Errorf("erro ao fazer upload do arquivo para o MinIO: %w", uploadErr)
+				return "", fmt.Errorf("error uploading file to MinIO: %w", uploadErr)
 			}
 
 			return localContent, nil
 		}
-		return "", fmt.Errorf("erro ao buscar arquivo: %w", err)
+		return "", fmt.Errorf("error fetching file: %w", err)
 	}
 
 	return string(content), nil
@@ -148,7 +148,7 @@ func (r *FileRepositoryMinioImpl) GetFileContent(id string) (string, error) {
 func (r *FileRepositoryMinioImpl) UploadFile(id string, content []byte) error {
 	_, err := r.minioClient.UploadFile(id, content)
 	if err != nil {
-		return fmt.Errorf("erro ao fazer upload do arquivo: %w", err)
+		return fmt.Errorf("error uploading file: %w", err)
 	}
 	return nil
 }
@@ -159,7 +159,7 @@ func (r *FileRepositoryMinioImpl) DeleteFile(id string) error {
 
 	metadata, err := r.metadataRepo.GetByID(id)
 	if err != nil {
-		return fmt.Errorf("arquivo não encontrado: %s", id)
+		return fmt.Errorf("file not found: %s", id)
 	}
 
 	if metadata.IsFolder {
@@ -167,19 +167,19 @@ func (r *FileRepositoryMinioImpl) DeleteFile(id string) error {
 		if childErr == nil && len(children) > 0 {
 			for _, child := range children {
 				if deleteErr := r.DeleteFile(child.ID); deleteErr != nil {
-					return fmt.Errorf("erro ao deletar arquivo filho %s: %w", child.ID, deleteErr)
+					return fmt.Errorf("error deleting child file %s: %w", child.ID, deleteErr)
 				}
 			}
 		}
 	} else {
 		if minioErr := r.minioClient.DeleteFile(id); minioErr != nil {
-			return fmt.Errorf("erro ao deletar arquivo do MinIO: %w", minioErr)
+			return fmt.Errorf("error deleting file from MinIO: %w", minioErr)
 		}
 	}
 
 	err = r.metadataRepo.Delete(id)
 	if err != nil {
-		return fmt.Errorf("erro ao deletar metadados: %w", err)
+		return fmt.Errorf("error deleting metadata: %w", err)
 	}
 
 	return nil

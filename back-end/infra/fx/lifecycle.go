@@ -22,11 +22,11 @@ func RegisterFiberServerHooks(
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			go func() {
-				log.Printf("Servidor Fiber rodando na porta %d\n", server.Port)
+				log.Printf("Fiber server running on port %d\n", server.Port)
 				if err := server.Start(); err != nil && err != http.ErrServerClosed {
 					projectError.FatalError(&projectError.Error{
 						Code:      projectError.ECONFLICT,
-						Message:   "Erro ao iniciar servidor Fiber",
+						Message:   "Error starting Fiber server",
 						Path:      "infra/fx/lifecycle.go",
 						PrevError: err,
 					})
@@ -35,7 +35,7 @@ func RegisterFiberServerHooks(
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			log.Println("Parando servidor Fiber...")
+			log.Println("Stopping Fiber server...")
 			return server.App.Shutdown()
 		},
 	})
@@ -48,19 +48,19 @@ func RegisterDatabaseHooks(
 ) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			log.Printf("Conectado ao banco de dados PostgreSQL em %s:%d/%s\n",
+			log.Printf("Connected to PostgreSQL database at %s:%d/%s\n",
 				config.DB.Host, config.DB.Port, config.DB.Name)
 
-			log.Println("Executando migrações automáticas...")
+			log.Println("Running automatic migrations...")
 			if err := db.AutoMigrate(&models.FileMetadata{}); err != nil {
-				return fmt.Errorf("falha ao executar migrações: %w", err)
+				return fmt.Errorf("failed to execute migrations: %w", err)
 			}
-			log.Println("Migrações concluídas com sucesso")
+			log.Println("Migrations completed successfully")
 
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			log.Println("Fechando conexão com o banco de dados...")
+			log.Println("Closing database connection...")
 			return db.Close()
 		},
 	})
