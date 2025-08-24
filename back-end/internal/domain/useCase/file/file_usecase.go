@@ -66,3 +66,7 @@ func (uc *FileUseCase) DeleteFile(id string) error {
 func (uc *FileUseCase) RenameFile(id string, newName string) error {
 	return uc.fileRepo.RenameFile(id, newName)
 }
+
+func (uc *FileUseCase) GetFileContent(id string) (string, error) {
+	return uc.fileRepo.GetFileContent(id)
+}

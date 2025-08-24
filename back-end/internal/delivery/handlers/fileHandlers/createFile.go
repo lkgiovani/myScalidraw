@@ -2,6 +2,7 @@ package fileHandlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -22,10 +23,17 @@ type CreateFileRequest struct {
 }
 
 func (h *FileHandler) CreateFile(c *fiber.Ctx) error {
+	// Log do body raw para debug
+	rawBody := c.Body()
+	fmt.Printf("CreateFile - Raw body: %s\n", string(rawBody))
+
 	var params CreateFileRequest
 	if err := c.BodyParser(&params); err != nil {
+		fmt.Printf("CreateFile - Error parsing body: %v\n", err)
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "error parsing request body"})
 	}
+
+	fmt.Printf("CreateFile - Parsed params: %+v\n", params)
 
 	fileID, err := uuid.GenerateUUID()
 	if err != nil {
@@ -33,7 +41,14 @@ func (h *FileHandler) CreateFile(c *fiber.Ctx) error {
 	}
 
 	fileName := params.Name
-	if !params.IsFolder && !strings.HasSuffix(fileName, ".excalidraw") {
+
+	// Se não especificado, assume que é um arquivo (não pasta)
+	isFolder := params.IsFolder
+	if params.Content != "" {
+		isFolder = false // Se tem conteúdo, definitivamente é um arquivo
+	}
+
+	if !isFolder && !strings.HasSuffix(fileName, ".excalidraw") {
 		fileName = strings.TrimSuffix(fileName, ".json") + ".excalidraw"
 	}
 
@@ -43,14 +58,14 @@ func (h *FileHandler) CreateFile(c *fiber.Ctx) error {
 		Name:         fileName,
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
-		IsFolder:     params.IsFolder,
+		IsFolder:     isFolder,
 		Size:         0,
 		ContentType:  "application/vnd.excalidraw+json",
 		LastModified: time.Now(),
 	}
 
 	var content []byte
-	if !params.IsFolder {
+	if !isFolder {
 		if params.Content != "" {
 			content = []byte(params.Content)
 		} else {

@@ -96,19 +96,21 @@ export function ExcalidrawEditor() {
   const { data: fileData, isLoading: isLoadingFile } = useFile(selectedFileId);
   const saveFileMutation = useSaveFile();
 
-  const [excalidrawData, setExcalidrawData] = useState<ExcalidrawData>({
-    elements: [],
-    appState: {
-      viewBackgroundColor: "#ffffff",
-      gridSize: null,
-    },
-  });
+  const [excalidrawData, setExcalidrawData] = useState<ExcalidrawData | null>(
+    null
+  );
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    // Resetar dados quando mudar de arquivo ou não tiver dados
+    if (!fileData || !selectedFileId) {
+      setExcalidrawData(null);
+      return;
+    }
+
     const typedFileData = fileData as FileData;
 
     let parsedContent = null;
@@ -147,10 +149,12 @@ export function ExcalidrawEditor() {
           : new Map(),
       };
 
-      setExcalidrawData({
+      const newExcalidrawData = {
         elements,
         appState: sanitizedAppState,
-      });
+      };
+
+      setExcalidrawData(newExcalidrawData);
       setHasUnsavedChanges(false);
     }
   }, [fileData, selectedFileId]);
@@ -212,7 +216,7 @@ export function ExcalidrawEditor() {
   );
 
   const handleSave = useCallback(() => {
-    if (!selectedFileId || !hasUnsavedChanges) return;
+    if (!selectedFileId || !hasUnsavedChanges || !excalidrawData) return;
 
     const jsonData = {
       type: "excalidraw",
@@ -391,8 +395,13 @@ export function ExcalidrawEditor() {
 
       <div className="h-full w-full">
         <div style={{ height: "100%", width: "100%" }}>
-          {/* Só renderizar Excalidraw quando tiver dados */}
-          {excalidrawData.elements && excalidrawData.elements.length > 0 ? (
+          {/* Só renderizar Excalidraw quando tiver dados válidos do backend */}
+          {!isLoadingFile &&
+          selectedFileId &&
+          fileData &&
+          excalidrawData &&
+          excalidrawData.elements &&
+          Array.isArray(excalidrawData.elements) ? (
             <ErrorBoundary>
               <Excalidraw
                 key={selectedFileId || "default"}
@@ -415,12 +424,21 @@ export function ExcalidrawEditor() {
               {isLoadingFile ? (
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                  Carregando arquivo...
+                  Carregando arquivo do servidor...
                 </div>
-              ) : selectedFileId ? (
+              ) : selectedFileId && !fileData ? (
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-                  Aguardando dados do arquivo...
+                  <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                  Aguardando dados do backend...
+                </div>
+              ) : selectedFileId &&
+                fileData &&
+                (!excalidrawData ||
+                  !excalidrawData.elements ||
+                  !Array.isArray(excalidrawData.elements)) ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                  Processando conteúdo do arquivo...
                 </div>
               ) : (
                 "Selecione um arquivo para editar"

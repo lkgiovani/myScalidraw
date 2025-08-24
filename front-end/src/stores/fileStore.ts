@@ -3,7 +3,7 @@ import { fileApi, type FileMetadata } from "@/lib/api";
 
 const getDefaultExcalidrawContent = async (): Promise<string> => {
   try {
-    const response = await fetch("/found.excalidraw");
+    const response = await fetch("/defund.excalidraw");
     const content = await response.text();
     return content;
   } catch (error) {
@@ -72,22 +72,9 @@ const convertApiFileToNode = (apiFile: FileMetadata): FileNode => {
     content = apiFile.content;
   } else if (apiFile.data) {
     content = JSON.stringify(apiFile.data);
-    console.log("Convertendo data para content:", {
-      id: apiFile.id,
-      name: apiFile.name,
-      hasData: !!apiFile.data,
-      contentLength: content.length,
-    });
   }
 
   const fileName = apiFile.name || apiFile.fileName;
-
-  console.log("convertApiFileToNode - Debug:", {
-    apiFile,
-    hasName: !!apiFile.name,
-    hasFileName: !!apiFile.fileName,
-    finalName: fileName,
-  });
 
   const node: FileNode = {
     id: apiFile.id,
@@ -103,13 +90,6 @@ const convertApiFileToNode = (apiFile: FileMetadata): FileNode => {
     content,
     parentId: apiFile.parentId,
   };
-
-  console.log("Arquivo convertido:", {
-    id: node.id,
-    name: node.name,
-    hasContent: !!node.content,
-    type: node.type,
-  });
 
   return node;
 };
@@ -147,22 +127,16 @@ export const useFileStore = create<FileStore>((set, get) => ({
   loadFilesFromApi: async () => {
     try {
       set({ isLoading: true });
-      console.log("loadFilesFromApi - Carregando arquivos da API...");
+
       const apiFiles = await fileApi.getFiles();
-      console.log("loadFilesFromApi - Arquivos recebidos da API:", apiFiles);
+
       const { filesMap, rootFiles } = buildFileTree(apiFiles);
-      console.log("loadFilesFromApi - Árvore construída:", {
-        filesMap,
-        rootFiles,
-      });
+
       set({
         files: filesMap,
         rootFolders: rootFiles,
         isLoading: false,
       });
-      console.log(
-        "loadFilesFromApi - Arquivos carregados no store com sucesso"
-      );
     } catch (error) {
       console.error("Erro ao carregar arquivos:", error);
       set({ isLoading: false });
@@ -186,16 +160,14 @@ export const useFileStore = create<FileStore>((set, get) => ({
 
   createFileApi: async (name, parentPath) => {
     try {
-      console.log("createFileApi - Iniciando criação:", { name, parentPath });
       const defaultContent = await getDefaultExcalidrawContent();
       const newFile = await fileApi.createFile({
         name,
         parentPath,
         content: defaultContent,
       });
-      console.log("createFileApi - Resposta da API:", newFile);
+
       const node = convertApiFileToNode(newFile);
-      console.log("createFileApi - Node convertido:", node);
 
       set((state) => ({
         files: { ...state.files, [node.id]: node },
@@ -203,7 +175,6 @@ export const useFileStore = create<FileStore>((set, get) => ({
           ? state.rootFolders
           : [...state.rootFolders, node.id],
       }));
-      console.log("createFileApi - Arquivo adicionado ao store com sucesso");
     } catch (error) {
       console.error("Erro ao criar arquivo:", error);
       throw error;

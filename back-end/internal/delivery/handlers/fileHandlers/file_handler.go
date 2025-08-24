@@ -58,9 +58,16 @@ func (h *FileHandler) GetFileByID(c *fiber.Ctx) error {
 		"path":         file.Path,
 	}
 
-	if !file.IsFolder && file.Data != nil {
-		if contentBytes, err := json.Marshal(file.Data); err == nil {
-			response["content"] = string(contentBytes)
+	if !file.IsFolder {
+		// Buscar o conteúdo original diretamente do repositório
+		content, err := h.fileUseCase.GetFileContent(id)
+		if err == nil && content != "" {
+			response["content"] = content
+		} else if file.Data != nil {
+			// Fallback: usar Data se o conteúdo original não estiver disponível
+			if contentBytes, err := json.Marshal(file.Data); err == nil {
+				response["content"] = string(contentBytes)
+			}
 		}
 	}
 

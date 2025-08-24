@@ -18,14 +18,6 @@ function FileTreeNode({ fileId, depth = 0 }: FileTreeNodeProps) {
 
   if (!file) return null;
 
-  console.log("FileTreeNode - Arquivo:", {
-    id: fileId,
-    name: file.name,
-    type: file.type,
-    hasName: !!file.name,
-    nameLength: file.name?.length,
-  });
-
   const hasChildren =
     file.type === "folder" && file.children && file.children.length > 0;
 
