@@ -1,6 +1,7 @@
 package models
 
 import (
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -12,6 +13,7 @@ type FileMetadata struct {
 	IsFolder     bool           `json:"isFolder"`
 	ParentID     string         `json:"parentId"`
 	StoragePath  string         `json:"storagePath"`
+	Path         string         `json:"path"`
 	ContentType  string         `json:"contentType"`
 	Size         int64          `json:"size"`
 	LastModified time.Time      `json:"lastModified"`
@@ -27,7 +29,7 @@ func (fm *FileMetadata) ToFileItem() FileItem {
 		IsFolder:     fm.IsFolder,
 		ParentID:     fm.ParentID,
 		LastModified: fm.LastModified.Unix() * 1000,
-		Path:         fm.StoragePath,
+		Path:         fm.Path,
 	}
 }
 
@@ -38,58 +40,72 @@ func (list FileMetadataList) ToFileSystem() []FileItem {
 	itemMap := make(map[string]*FileItem)
 	metadataMap := make(map[string]*FileMetadata)
 
+	// Primeiro passo: converter todos os metadados para FileItem
 	for _, metadata := range list {
+		if metadata == nil {
+
+			continue
+		}
+
 		item := metadata.ToFileItem()
+
+		// Normalizar path se estiver com problema
+		if strings.Contains(item.Path, "//") {
+			item.Path = strings.ReplaceAll(item.Path, "//", "/")
+
+		}
+
 		itemMap[item.ID] = &item
 		metadataMap[metadata.ID] = metadata
-	}
 
-	buildPath := func(itemID string) string {
-		var pathParts []string
-		current := metadataMap[itemID]
-
-		for current != nil && current.ParentID != "" {
-			if parent, exists := metadataMap[current.ParentID]; exists {
-				pathParts = append([]string{parent.Name}, pathParts...)
-				current = parent
-			} else {
-				break
-			}
-		}
-
-		if len(pathParts) == 0 {
-			return "/"
-		}
-		return "/" + joinPath(pathParts)
-	}
-
-	for id, item := range itemMap {
-		item.Path = buildPath(id)
 	}
 
 	var rootItems []FileItem
 
-	for id, item := range itemMap {
-		if item.ParentID == "" {
+	for _, item := range itemMap {
+		if item.ParentID == "" || item.ParentID == "null" {
 
 			rootItems = append(rootItems, *item)
 		} else {
-
 			if parent, ok := itemMap[item.ParentID]; ok {
 				if parent.Children == nil {
 					parent.Children = []FileItem{}
 				}
 				parent.Children = append(parent.Children, *item)
+
 			} else {
 
 				rootItems = append(rootItems, *item)
 			}
 		}
-
-		delete(itemMap, id)
 	}
 
 	return rootItems
+}
+
+func (list FileMetadataList) ToFlatList() []FileItem {
+
+	var items []FileItem
+
+	for _, metadata := range list {
+		if metadata == nil {
+
+			continue
+		}
+
+		item := metadata.ToFileItem()
+
+		if strings.Contains(item.Path, "//") {
+			item.Path = strings.ReplaceAll(item.Path, "//", "/")
+
+		}
+
+		// Adicionar à lista plana
+		items = append(items, item)
+
+	}
+
+	return items
 }
 
 func joinPath(parts []string) string {

@@ -198,6 +198,66 @@ func (m *MinIO) GetFileURL(fileID string) string {
 	return presignedURL.String()
 }
 
+func (m *MinIO) CreateFolder(folderPath string) error {
+	if folderPath == "" {
+		return fmt.Errorf("folder path cannot be empty")
+	}
+
+	if !strings.HasSuffix(folderPath, "/") {
+		folderPath += "/"
+	}
+
+	if strings.HasPrefix(folderPath, "/") {
+		folderPath = folderPath[1:]
+	}
+
+	ctx := context.Background()
+	reader := bytes.NewReader([]byte{})
+
+	_, err := m.Client.PutObject(ctx, m.Bucket, folderPath, reader, 0,
+		minio.PutObjectOptions{ContentType: "application/x-directory"})
+	if err != nil {
+		return fmt.Errorf("failed to create folder '%s' in MinIO: %w", folderPath, err)
+	}
+
+	log.Printf("Successfully created folder: %s", folderPath)
+	return nil
+}
+
+func (m *MinIO) MoveFile(oldFileID, newFileID string) error {
+	if oldFileID == "" || newFileID == "" {
+		return fmt.Errorf("file IDs cannot be empty")
+	}
+
+	oldObjectName := oldFileID + ".json"
+	newObjectName := newFileID + ".json"
+
+	ctx := context.Background()
+
+	src := minio.CopySrcOptions{
+		Bucket: m.Bucket,
+		Object: oldObjectName,
+	}
+
+	dst := minio.CopyDestOptions{
+		Bucket: m.Bucket,
+		Object: newObjectName,
+	}
+
+	_, err := m.Client.CopyObject(ctx, dst, src)
+	if err != nil {
+		return fmt.Errorf("failed to copy file from '%s' to '%s': %w", oldFileID, newFileID, err)
+	}
+
+	err = m.Client.RemoveObject(ctx, m.Bucket, oldObjectName, minio.RemoveObjectOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to remove old file '%s': %w", oldFileID, err)
+	}
+
+	log.Printf("Successfully moved file from %s to %s", oldFileID, newFileID)
+	return nil
+}
+
 var Module = fx.Options(
 	fx.Provide(NewMinIO),
 )

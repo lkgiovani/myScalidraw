@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-	"sync"
 	"time"
 
 	"myScalidraw/infra/database"
@@ -14,7 +13,6 @@ import (
 )
 
 type FileRepositoryMinioImpl struct {
-	mu           sync.Mutex
 	fileSystem   []models.FileItem
 	minioClient  *storage.MinIO
 	metadataRepo repository.FileMetadataRepository
@@ -36,7 +34,6 @@ func NewFileRepositoryMinio(minioClient *storage.MinIO, db *database.DB, metadat
 func (r *FileRepositoryMinioImpl) loadFileSystem() {
 	metadata, err := r.metadataRepo.GetAll()
 	if err != nil {
-		fmt.Printf("Error loading metadata: %v\n", err)
 
 		r.fileSystem = []models.FileItem{
 			{
@@ -74,23 +71,18 @@ func (r *FileRepositoryMinioImpl) findFileByID(items []models.FileItem, id strin
 }
 
 func (r *FileRepositoryMinioImpl) GetFileByID(id string) *models.FileItem {
-
 	metadata, err := r.metadataRepo.GetByID(id)
 	if err != nil {
-
 		return r.findFileByID(r.fileSystem, id)
 	}
 
 	item := metadata.ToFileItem()
-
-	item.Path = r.buildItemPath(metadata)
 
 	if metadata.IsFolder {
 		children, err := r.metadataRepo.GetByParentID(id)
 		if err == nil {
 			for _, child := range children {
 				childItem := child.ToFileItem()
-				childItem.Path = r.buildItemPath(child)
 				item.Children = append(item.Children, childItem)
 			}
 		}
@@ -128,9 +120,6 @@ func (r *FileRepositoryMinioImpl) buildItemPath(metadata *models.FileMetadata) s
 }
 
 func (r *FileRepositoryMinioImpl) SaveFile(id string, content string) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
 	metadata, err := r.metadataRepo.GetByID(id)
 	if err != nil {
 		return fmt.Errorf("file not found: %s", id)
@@ -185,9 +174,11 @@ func (r *FileRepositoryMinioImpl) UploadFile(id string, content []byte) error {
 	return nil
 }
 
+func (r *FileRepositoryMinioImpl) CreateFolder(folderPath string) error {
+	return r.minioClient.CreateFolder(folderPath)
+}
+
 func (r *FileRepositoryMinioImpl) DeleteFile(id string) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
 
 	metadata, err := r.metadataRepo.GetByID(id)
 	if err != nil {
@@ -218,8 +209,6 @@ func (r *FileRepositoryMinioImpl) DeleteFile(id string) error {
 }
 
 func (r *FileRepositoryMinioImpl) RenameFile(id string, newName string) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
 
 	metadata, err := r.metadataRepo.GetByID(id)
 	if err != nil {
@@ -233,12 +222,55 @@ func (r *FileRepositoryMinioImpl) RenameFile(id string, newName string) error {
 	metadata.Name = newName
 	metadata.UpdatedAt = time.Now()
 
+	var newPath string
+	if metadata.ParentID != "" {
+		parent, parentErr := r.metadataRepo.GetByID(metadata.ParentID)
+		if parentErr == nil {
+			newPath = parent.Path + "/" + newName
+		} else {
+			newPath = "/" + newName
+		}
+	} else {
+		newPath = "/" + newName
+	}
+
+	metadata.StoragePath = newPath
+	metadata.Path = newPath
+
 	err = r.metadataRepo.Update(metadata)
 	if err != nil {
 		return fmt.Errorf("error updating metadata: %w", err)
 	}
 
+	if metadata.IsFolder {
+		children, childErr := r.metadataRepo.GetByParentID(id)
+		if childErr == nil {
+			for _, child := range children {
+				r.updateChildPaths(child, metadata.StoragePath)
+			}
+		}
+	}
+
 	return nil
+}
+
+func (r *FileRepositoryMinioImpl) updateChildPaths(child *models.FileMetadata, parentPath string) {
+
+	newPath := parentPath + "/" + child.Name
+	child.StoragePath = newPath
+	child.Path = newPath
+	child.UpdatedAt = time.Now()
+
+	r.metadataRepo.Update(child)
+
+	if child.IsFolder {
+		grandChildren, err := r.metadataRepo.GetByParentID(child.ID)
+		if err == nil {
+			for _, grandChild := range grandChildren {
+				r.updateChildPaths(grandChild, newPath)
+			}
+		}
+	}
 }
 
 func loadLocalExcalidrawFile() (string, error) {

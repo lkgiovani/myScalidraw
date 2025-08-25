@@ -3,7 +3,7 @@ package models
 type FileItem struct {
 	ID           string      `json:"id"`
 	Name         string      `json:"name"`
-	IsFolder     bool        `json:"isFolder,omitempty"`
+	IsFolder     bool        `json:"isFolder"`
 	Children     []FileItem  `json:"children,omitempty"`
 	Data         interface{} `json:"data,omitempty"`
 	LastModified int64       `json:"lastModified,omitempty"`

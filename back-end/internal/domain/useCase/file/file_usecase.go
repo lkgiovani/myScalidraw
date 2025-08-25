@@ -20,7 +20,16 @@ func NewFileUseCase(fileRepo repository.FileRepository, metadataRepo repository.
 }
 
 func (uc *FileUseCase) GetFiles() []models.FileItem {
-	return uc.fileRepo.GetFileSystem()
+
+	metadata, err := uc.metadataRepo.GetAll()
+	if err != nil {
+
+		return []models.FileItem{}
+	}
+
+	flatList := metadata.ToFlatList()
+
+	return flatList
 }
 
 func (uc *FileUseCase) GetFileByID(id string) (*models.FileItem, error) {
@@ -50,6 +59,10 @@ func (uc *FileUseCase) CreateFile(metadata *models.FileMetadata, content []byte)
 	err := uc.metadataRepo.Create(metadata)
 	if err != nil {
 		return err
+	}
+
+	if metadata.IsFolder {
+		return uc.fileRepo.CreateFolder(metadata.Path)
 	}
 
 	if len(content) > 0 {

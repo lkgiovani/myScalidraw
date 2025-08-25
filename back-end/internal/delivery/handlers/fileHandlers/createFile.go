@@ -2,7 +2,6 @@ package fileHandlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -23,17 +22,11 @@ type CreateFileRequest struct {
 }
 
 func (h *FileHandler) CreateFile(c *fiber.Ctx) error {
-	// Log do body raw para debug
-	rawBody := c.Body()
-	fmt.Printf("CreateFile - Raw body: %s\n", string(rawBody))
 
 	var params CreateFileRequest
 	if err := c.BodyParser(&params); err != nil {
-		fmt.Printf("CreateFile - Error parsing body: %v\n", err)
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "error parsing request body"})
 	}
-
-	fmt.Printf("CreateFile - Parsed params: %+v\n", params)
 
 	fileID, err := uuid.GenerateUUID()
 	if err != nil {
@@ -42,20 +35,39 @@ func (h *FileHandler) CreateFile(c *fiber.Ctx) error {
 
 	fileName := params.Name
 
-	// Se não especificado, assume que é um arquivo (não pasta)
 	isFolder := params.IsFolder
 	if params.Content != "" {
-		isFolder = false // Se tem conteúdo, definitivamente é um arquivo
+		isFolder = false
 	}
 
 	if !isFolder && !strings.HasSuffix(fileName, ".excalidraw") {
 		fileName = strings.TrimSuffix(fileName, ".json") + ".excalidraw"
 	}
 
+	var storagePath string
+	if params.ParentID != "" {
+		parent, err := h.fileUseCase.GetFileByID(params.ParentID)
+		if err == nil && parent != nil {
+
+			parentPath := strings.TrimSuffix(parent.Path, "/")
+			if parentPath == "" {
+				parentPath = "/"
+			}
+			storagePath = parentPath + "/" + fileName
+		} else {
+
+			storagePath = "/" + fileName
+		}
+	} else {
+		storagePath = "/" + fileName
+	}
+
 	metadata := &models.FileMetadata{
 		ID:           fileID,
 		ParentID:     params.ParentID,
 		Name:         fileName,
+		StoragePath:  storagePath,
+		Path:         storagePath,
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
 		IsFolder:     isFolder,
@@ -89,18 +101,13 @@ func (h *FileHandler) CreateFile(c *fiber.Ctx) error {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "error creating file"})
 	}
 
-	response := map[string]interface{}{
-		"id":           metadata.ID,
-		"name":         metadata.Name,
-		"path":         "/" + metadata.Name,
-		"size":         metadata.Size,
-		"modified":     metadata.LastModified.Format(time.RFC3339),
-		"lastModified": metadata.LastModified.Unix() * 1000,
-		"isFolder":     metadata.IsFolder,
-		"parentId":     metadata.ParentID,
+	fileItem := metadata.ToFileItem()
+
+	if metadata.IsFolder {
+		fileItem.Children = []models.FileItem{}
 	}
 
-	return c.JSON(response)
+	return c.JSON(fileItem)
 }
 
 func (h *FileHandler) UploadFile(c *fiber.Ctx) error {
