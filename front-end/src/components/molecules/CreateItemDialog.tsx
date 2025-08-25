@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useFileStore } from "@/stores/fileStore";
 import { FileIcon } from "@/components/ui/icons";
-import { useCreateFile } from "@/hooks/useFileApi";
+
 import { toast } from "sonner";
 
 interface CreateItemDialogProps {
@@ -28,22 +28,17 @@ export function CreateItemDialog({
   const [name, setName] = useState("");
   const [type, setType] = useState<"file" | "folder">("file");
   const createFileApi = useFileStore((state) => state.createFileApi);
-  const createFolder = useFileStore((state) => state.createFolder);
+  const createFolderApi = useFileStore((state) => state.createFolderApi);
   const selectFile = useFileStore((state) => state.selectFile);
-  const files = useFileStore((state) => state.files);
-
-  const createFileMutation = useCreateFile();
 
   const handleCreate = async () => {
     if (!name.trim()) return;
 
     try {
       if (type === "file") {
-        const parentPath = parentId ? files[parentId]?.path : undefined;
-        await createFileApi(name.trim(), parentPath);
+        await createFileApi(name.trim(), parentId);
       } else {
-        const newId = createFolder(name.trim(), parentId);
-        selectFile(newId);
+        await createFolderApi(name.trim(), parentId);
       }
 
       setName("");

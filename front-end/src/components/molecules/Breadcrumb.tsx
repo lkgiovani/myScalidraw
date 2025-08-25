@@ -1,6 +1,7 @@
 import { useFileStore } from "@/stores/fileStore";
 import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/ui/icons";
+import { SettingsMenu } from "@/components/molecules/SettingsMenu";
 import { cn } from "@/lib/utils";
 
 export function Breadcrumb() {
@@ -36,7 +37,7 @@ export function Breadcrumb() {
   const pathItems = buildPath(selectedFileId);
 
   return (
-    <div className="flex items-center h-12 px-4 border-b border-explorer-border bg-background">
+    <div className="flex items-center justify-between h-12 px-4 border-b border-explorer-border bg-background">
       <div className="flex items-center space-x-1 overflow-hidden">
         <Button
           variant="ghost"
@@ -75,6 +76,8 @@ export function Breadcrumb() {
           </>
         )}
       </div>
+
+      <SettingsMenu />
     </div>
   );
 }

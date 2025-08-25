@@ -1,7 +1,7 @@
 import { useFileStore } from "@/stores/fileStore";
 import { FileIcon, Icons } from "@/components/ui/icons";
 import { Button } from "@/components/ui/button";
-import { FileContextMenu } from "./FileContextMenu";
+import { FileContextMenu } from "@/components/molecules/FileContextMenu";
 import { cn } from "@/lib/utils";
 
 interface FileTreeNodeProps {

@@ -55,7 +55,8 @@ interface FileStore {
   setSearchQuery: (query: string) => void;
   setLoading: (loading: boolean) => void;
 
-  createFileApi: (name: string, parentPath?: string) => Promise<void>;
+  createFileApi: (name: string, parentId?: string) => Promise<void>;
+  createFolderApi: (name: string, parentId?: string) => Promise<void>;
   saveFileApi: (id: string, content: string) => Promise<void>;
   deleteFileApi: (id: string) => Promise<void>;
 
@@ -103,9 +104,21 @@ const buildFileTree = (
   files.forEach((file) => {
     const node = convertApiFileToNode(file);
     filesMap[node.id] = node;
+  });
 
-    if (!node.path.includes("/") || node.path.startsWith("/")) {
+  Object.values(filesMap).forEach((node) => {
+    if (!node.parentId || node.parentId === "") {
       rootFiles.push(node.id);
+    } else {
+      const parent = filesMap[node.parentId];
+      if (parent) {
+        if (!parent.children) {
+          parent.children = [];
+        }
+        parent.children.push(node.id);
+      } else {
+        rootFiles.push(node.id);
+      }
     }
   });
 
@@ -158,25 +171,73 @@ export const useFileStore = create<FileStore>((set, get) => ({
 
   setSearchQuery: (query) => set({ searchQuery: query }),
 
-  createFileApi: async (name, parentPath) => {
+  createFileApi: async (name, parentId) => {
     try {
       const defaultContent = await getDefaultExcalidrawContent();
       const newFile = await fileApi.createFile({
         name,
-        parentPath,
+        parentId,
         content: defaultContent,
+        isFolder: false,
       });
 
       const node = convertApiFileToNode(newFile);
+      node.parentId = parentId;
 
-      set((state) => ({
-        files: { ...state.files, [node.id]: node },
-        rootFolders: parentPath
-          ? state.rootFolders
-          : [...state.rootFolders, node.id],
-      }));
+      set((state) => {
+        const updatedFiles = { ...state.files, [node.id]: node };
+
+        if (parentId && state.files[parentId]) {
+          const parent = state.files[parentId];
+          updatedFiles[parentId] = {
+            ...parent,
+            children: [...(parent.children || []), node.id],
+          };
+          return { files: updatedFiles };
+        }
+
+        return {
+          files: updatedFiles,
+          rootFolders: [...state.rootFolders, node.id],
+        };
+      });
     } catch (error) {
       console.error("Erro ao criar arquivo:", error);
+      throw error;
+    }
+  },
+
+  createFolderApi: async (name, parentId) => {
+    try {
+      const newFolder = await fileApi.createFile({
+        name,
+        parentId,
+        isFolder: true,
+      });
+
+      const node = convertApiFileToNode(newFolder);
+      node.parentId = parentId;
+      node.children = [];
+
+      set((state) => {
+        const updatedFiles = { ...state.files, [node.id]: node };
+
+        if (parentId && state.files[parentId]) {
+          const parent = state.files[parentId];
+          updatedFiles[parentId] = {
+            ...parent,
+            children: [...(parent.children || []), node.id],
+          };
+          return { files: updatedFiles };
+        }
+
+        return {
+          files: updatedFiles,
+          rootFolders: [...state.rootFolders, node.id],
+        };
+      });
+    } catch (error) {
+      console.error("Erro ao criar pasta:", error);
       throw error;
     }
   },

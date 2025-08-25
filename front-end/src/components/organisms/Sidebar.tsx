@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useFileStore } from "@/stores/fileStore";
 import { FileTree } from "./FileTree";
-import { FileContextMenu } from "./FileContextMenu";
-import { CreateItemDialog } from "./CreateItemDialog";
+import { FileContextMenu } from "@/components/molecules/FileContextMenu";
+import { CreateItemDialog } from "@/components/molecules/CreateItemDialog";
 import { Input } from "@/components/ui/input";
 import { Icons } from "@/components/ui/icons";
 import { Button } from "@/components/ui/button";

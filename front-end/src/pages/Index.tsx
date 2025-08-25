@@ -1,4 +1,4 @@
-import { FileExplorer } from "@/components/FileExplorer/FileExplorer";
+import { FileExplorer } from "@/components/templates/FileExplorer";
 
 const Index = () => {
   return <FileExplorer />;

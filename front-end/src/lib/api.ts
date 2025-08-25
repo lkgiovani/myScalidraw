@@ -22,12 +22,14 @@ export interface FileMetadata {
   data?: Record<string, unknown>;
   isFolder?: boolean;
   parentId?: string;
+  children?: FileMetadata[]; // Para estrutura hierárquica do backend
 }
 
 export interface CreateFileRequest {
   name: string;
-  parentPath?: string;
+  parentId?: string;
   content?: string;
+  isFolder?: boolean;
 }
 
 export interface SaveFileRequest {
