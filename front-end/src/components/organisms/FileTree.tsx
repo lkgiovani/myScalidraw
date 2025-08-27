@@ -1,5 +1,5 @@
 import { useFileStore } from "@/stores/fileStore";
-import { FileIcon, Icons } from "@/components/ui/icons";
+import { ChevronDown, ChevronRight, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FileContextMenu } from "@/components/molecules/FileContextMenu";
 import { cn } from "@/lib/utils";
@@ -50,18 +50,15 @@ function FileTreeNode({ fileId, depth = 0 }: FileTreeNodeProps) {
               <div className="flex-shrink-0 w-4 h-4">
                 {hasChildren ? (
                   isExpanded ? (
-                    <Icons.chevronDown className="w-3 h-3 text-muted-foreground" />
+                    <ChevronDown className="w-3 h-3 text-muted-foreground" />
                   ) : (
-                    <Icons.chevronRight className="w-3 h-3 text-muted-foreground" />
+                    <ChevronRight className="w-3 h-3 text-muted-foreground" />
                   )
                 ) : null}
               </div>
             )}
 
-            <FileIcon
-              type={file.type}
-              name={file.name}
-              isOpen={isExpanded}
+            <FileText
               className={cn(
                 "w-4 h-4 flex-shrink-0",
                 file.type === "folder"

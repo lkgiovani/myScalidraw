@@ -4,7 +4,7 @@ import { FileTree } from "./FileTree";
 import { FileContextMenu } from "@/components/molecules/FileContextMenu";
 import { CreateItemDialog } from "@/components/molecules/CreateItemDialog";
 import { Input } from "@/components/ui/input";
-import { Icons } from "@/components/ui/icons";
+import { FileText, MoreHorizontal, Search, Folder } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -42,7 +42,7 @@ export function Sidebar() {
                 className="h-6 w-6 p-0 hover:bg-primary-muted"
                 title="Novo item"
               >
-                <Icons.fileText className="h-3 w-3" />
+                <FileText className="h-3 w-3" />
               </Button>
             </div>
           )}
@@ -52,7 +52,7 @@ export function Sidebar() {
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="h-8 w-8 p-0"
           >
-            <Icons.moreHorizontal className="h-4 w-4" />
+            <MoreHorizontal className="h-4 w-4" />
           </Button>
         </div>
 
@@ -61,7 +61,7 @@ export function Sidebar() {
             {/* Search */}
             <div className="p-4 border-b border-explorer-border">
               <div className="relative">
-                <Icons.search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search files..."
                   value={searchQuery}
@@ -93,7 +93,7 @@ export function Sidebar() {
             <div className="p-4 border-t border-explorer-border">
               <div className="text-xs text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  <Icons.folder className="w-3 h-3" />
+                  <Folder className="w-3 h-3" />
                   <span>File Explorer</span>
                 </div>
               </div>

@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useFileStore, FileNode } from "@/stores/fileStore";
 import { useRenameFile } from "@/hooks/useFileApi";
-import { FileIcon } from "@/components/ui/icons";
+import { FileText } from "lucide-react";
 
 interface RenameDialogProps {
   open: boolean;
@@ -70,7 +70,7 @@ export function RenameDialog({ open, onOpenChange, file }: RenameDialogProps) {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <FileIcon type={file.type} name={file.name} className="w-5 h-5" />
+            <FileText className="w-5 h-5" />
             Renomear {file.type === "file" ? "Arquivo" : "Pasta"}
           </DialogTitle>
         </DialogHeader>

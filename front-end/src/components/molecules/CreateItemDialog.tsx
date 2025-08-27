@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useFileStore } from "@/stores/fileStore";
-import { FileIcon } from "@/components/ui/icons";
+import { FileText, Folder } from "lucide-react";
 
 import { toast } from "sonner";
 
@@ -60,7 +60,7 @@ export function CreateItemDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <FileIcon type={type} className="w-5 h-5" />
+            <FileText className="w-5 h-5" />
             Criar {type === "file" ? "Arquivo" : "Pasta"}
           </DialogTitle>
         </DialogHeader>
@@ -78,10 +78,7 @@ export function CreateItemDialog({
                   htmlFor="file"
                   className="flex items-center gap-2 cursor-pointer"
                 >
-                  <FileIcon
-                    type="file"
-                    className="w-4 h-4 text-file-document"
-                  />
+                  <FileText className="w-4 h-4 text-file-document" />
                   Arquivo (.excalidraw)
                 </Label>
               </div>
@@ -91,10 +88,7 @@ export function CreateItemDialog({
                   htmlFor="folder"
                   className="flex items-center gap-2 cursor-pointer"
                 >
-                  <FileIcon
-                    type="folder"
-                    className="w-4 h-4 text-file-folder"
-                  />
+                  <Folder className="w-4 h-4 text-file-folder" />
                   Pasta
                 </Label>
               </div>

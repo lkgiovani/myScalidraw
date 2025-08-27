@@ -7,10 +7,10 @@ import {
 } from "@/components/ui/context-menu";
 import { useFileStore, FileNode } from "@/stores/fileStore";
 import { useDeleteFile } from "@/hooks/useFileApi";
-import { Icons } from "@/components/ui/icons";
 import { useState } from "react";
 import { CreateItemDialog } from "./CreateItemDialog";
 import { RenameDialog } from "./RenameDialog";
+import { FileText, Folder } from "lucide-react";
 
 interface FileContextMenuProps {
   file?: FileNode;
@@ -57,7 +57,7 @@ export function FileContextMenu({
         <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
         <ContextMenuContent className="w-48">
           <ContextMenuItem onClick={handleCreateNew} className="gap-2">
-            <Icons.fileText className="w-4 h-4" />
+            <FileText className="w-4 h-4" />
             Novo Item
           </ContextMenuItem>
 
@@ -66,7 +66,7 @@ export function FileContextMenu({
               onClick={() => setShowCreateDialog(true)}
               className="gap-2"
             >
-              <Icons.folder className="w-4 h-4" />
+              <Folder className="w-4 h-4" />
               Novo em "{file.name}"
             </ContextMenuItem>
           )}
@@ -78,14 +78,14 @@ export function FileContextMenu({
                 onClick={() => setShowRenameDialog(true)}
                 className="gap-2"
               >
-                <Icons.file className="w-4 h-4" />
+                <FileText className="w-4 h-4" />
                 Renomear
               </ContextMenuItem>
               <ContextMenuItem
                 onClick={handleDelete}
                 className="gap-2 text-destructive focus:text-destructive"
               >
-                <Icons.file className="w-4 h-4" />
+                <FileText className="w-4 h-4" />
                 Deletar
               </ContextMenuItem>
             </>

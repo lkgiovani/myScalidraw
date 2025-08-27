@@ -1,8 +1,9 @@
 import { useFileStore } from "@/stores/fileStore";
 import { Button } from "@/components/ui/button";
-import { Icons } from "@/components/ui/icons";
 import { SettingsMenu } from "@/components/molecules/SettingsMenu";
 import { cn } from "@/lib/utils";
+import { Home } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 export function Breadcrumb() {
   const selectedFileId = useFileStore((state) => state.selectedFileId);
@@ -45,12 +46,12 @@ export function Breadcrumb() {
           onClick={() => selectFile(null)}
           className="h-8 px-2 text-muted-foreground hover:text-foreground"
         >
-          <Icons.home className="w-4 h-4" />
+          <Home className="w-4 h-4" />
         </Button>
 
         {pathItems.length > 0 && (
           <>
-            <Icons.chevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
             {pathItems.map((item, index) => (
               <div key={item.id} className="flex items-center space-x-1">
                 <Button
@@ -69,7 +70,7 @@ export function Breadcrumb() {
                 </Button>
 
                 {index < pathItems.length - 1 && (
-                  <Icons.chevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 )}
               </div>
             ))}

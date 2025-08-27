@@ -1,6 +1,7 @@
 import ky from "ky";
+import { env } from "@/config/env";
 
-const API_BASE_URL = "http://localhost:8181/api";
+const API_BASE_URL = env.API_BASE_URL;
 
 export const api = ky.create({
   prefixUrl: API_BASE_URL,
