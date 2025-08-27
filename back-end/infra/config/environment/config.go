@@ -11,12 +11,7 @@ type Config struct {
 		Port int
 	}
 	DB struct {
-		Host     string
-		Port     int
-		User     string
-		Password string
-		Name     string
-		SSLMode  string
+		URL_DB string
 	}
 	MINIO struct {
 		Endpoint  string
@@ -42,32 +37,7 @@ func NewConfig() (*Config, error) {
 		return nil, err
 	}
 
-	dbHost, err := getString("DB_HOST", "Error loading DB Host")
-	if err != nil {
-		return nil, err
-	}
-
-	dbPort, err := getInt("DB_PORT", "Error loading DB Port")
-	if err != nil {
-		return nil, err
-	}
-
-	dbUser, err := getString("DB_USER", "Error loading DB User")
-	if err != nil {
-		return nil, err
-	}
-
-	dbPassword, err := getString("DB_PASSWORD", "Error loading DB Password")
-	if err != nil {
-		return nil, err
-	}
-
-	dbName, err := getString("DB_NAME", "Error loading DB Name")
-	if err != nil {
-		return nil, err
-	}
-
-	dbSSLMode, err := getString("DB_SSL_MODE", "Error loading DB SSL Mode")
+	dbURL, err := getString("URL_DB", "Error loading DB URL")
 	if err != nil {
 		return nil, err
 	}
@@ -121,19 +91,9 @@ func NewConfig() (*Config, error) {
 			Port: httpPort,
 		},
 		DB: struct {
-			Host     string
-			Port     int
-			User     string
-			Password string
-			Name     string
-			SSLMode  string
+			URL_DB string
 		}{
-			Host:     dbHost,
-			Port:     dbPort,
-			User:     dbUser,
-			Password: dbPassword,
-			Name:     dbName,
-			SSLMode:  dbSSLMode,
+			URL_DB: dbURL,
 		},
 		MINIO: struct {
 			Endpoint  string

@@ -1,0 +1,23 @@
+FROM golang:1.25.0-alpine AS builder
+
+WORKDIR /app
+
+RUN apk add --no-cache git
+
+COPY back-end/go.mod back-end/go.sum ./
+RUN go mod download
+
+COPY back-end/ .
+
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/main.go
+
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates tzdata
+WORKDIR /root/
+
+COPY --from=builder /app/main .
+
+EXPOSE 8080
+
+CMD ["./main"]

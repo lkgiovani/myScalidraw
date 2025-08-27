@@ -29,6 +29,12 @@ func (h *FileHandler) RegisterRoutes(app *fiber.App) {
 	api.Put("/files/:id", h.SaveFile)
 	api.Put("/files/:id/rename", h.RenameFile)
 	api.Delete("/files/:id", h.DeleteFile)
+
+	api.Get("/ping", h.Ping)
+}
+
+func (h *FileHandler) Ping(c *fiber.Ctx) error {
+	return c.SendString("pong")
 }
 
 func (h *FileHandler) GetFiles(c *fiber.Ctx) error {

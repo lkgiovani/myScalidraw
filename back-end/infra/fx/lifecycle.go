@@ -49,7 +49,7 @@ func RegisterDatabaseHooks(
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			log.Printf("Connected to PostgreSQL database at %s:%d/%s\n",
-				config.DB.Host, config.DB.Port, config.DB.Name)
+				config.DB.URL_DB)
 
 			log.Println("Running automatic migrations...")
 			if err := db.AutoMigrate(&models.FileMetadata{}); err != nil {

@@ -12,22 +12,12 @@ import (
 )
 
 type PostgresConfig struct {
-	Host     string
-	Port     int
-	User     string
-	Password string
-	DBName   string
-	SSLMode  string
+	URL_DB string
 }
 
-func NewPostgresConfig(host string, port int, user, password, dbName, sslMode string) PostgresConfig {
+func NewPostgresConfig(url string) PostgresConfig {
 	return PostgresConfig{
-		Host:     host,
-		Port:     port,
-		User:     user,
-		Password: password,
-		DBName:   dbName,
-		SSLMode:  sslMode,
+		URL_DB: url,
 	}
 }
 
@@ -36,10 +26,7 @@ type DB struct {
 }
 
 func NewDB(config PostgresConfig) (*DB, error) {
-	dsn := fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
-		config.Host, config.Port, config.User, config.Password, config.DBName, config.SSLMode,
-	)
+	dsn := config.URL_DB
 
 	gormLogger := logger.New(
 		log.New(log.Writer(), "\r\n", log.LstdFlags),

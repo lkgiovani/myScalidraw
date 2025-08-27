@@ -21,12 +21,7 @@ var DatabaseModule = fx.Options(
 	fx.Provide(
 		func(config *environment.Config) database.PostgresConfig {
 			return database.NewPostgresConfig(
-				config.DB.Host,
-				config.DB.Port,
-				config.DB.User,
-				config.DB.Password,
-				config.DB.Name,
-				config.DB.SSLMode,
+				config.DB.URL_DB,
 			)
 		},
 	),
