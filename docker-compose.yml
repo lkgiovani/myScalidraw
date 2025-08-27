@@ -75,6 +75,7 @@ services:
       - myscalidraw-network
 
   frontend:
+    pull_policy: always
     build:
       context: ./front-end
       dockerfile: Dockerfile
