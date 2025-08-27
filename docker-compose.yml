@@ -78,11 +78,11 @@ services:
     build:
       context: ./front-end
       dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL}
     container_name: myscalidraw-frontend
     ports:
       - "5173:5173"
-    environment:
-      VITE_API_BASE_URL: ${VITE_API_BASE_URL}
     depends_on:
       - backend
     networks:
