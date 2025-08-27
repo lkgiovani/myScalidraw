@@ -1,15 +1,20 @@
-version: "3.8"
-
 services:
   postgres:
     image: postgres:17.6-alpine
     container_name: myscalidraw-postgres
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: scalidraw
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test:
+        ["CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 40s
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -19,13 +24,67 @@ services:
     image: minio/minio:RELEASE.2025-04-22T22-12-26Z
     container_name: myscalidraw-minio
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "${MINIO_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:9001"
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:${MINIO_PORT}/minio/health/live",
+        ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 40s
     volumes:
       - minio_data:/data
+    networks:
+      - myscalidraw-network
+    command: server /data --console-address ":${MINIO_CONSOLE_PORT}"
+
+  backend:
+    build:
+      context: .
+      dockerfile: ./back-end/Dockerfile
+    container_name: myscalidraw-backend
+    ports:
+      - "8181:8181"
+    environment:
+      URL: ${URL}
+      PORT: ${PORT}
+      URL_DB: ${URL_DB}
+      URL_SHORTENED_PREFIX: ${URL_SHORTENED_PREFIX}
+      JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_USE_SSL: ${MINIO_USE_SSL}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - myscalidraw-network
+
+  frontend:
+    build:
+      context: ./front-end
+      dockerfile: Dockerfile
+    container_name: myscalidraw-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+    depends_on:
+      - backend
     networks:
       - myscalidraw-network
 
