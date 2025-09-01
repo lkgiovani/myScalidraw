@@ -48,10 +48,8 @@ services:
     command: server /data --console-address ":${MINIO_CONSOLE_PORT}"
 
   backend:
-    build:
-      context: ./back-end
-      dockerfile: Dockerfile
-
+    image: ghcr.io/lkgiovani/myscalidraw:main
+    pull_policy: always
     container_name: myscalidraw-backend
     ports:
       - "8181:8181"
@@ -76,12 +74,8 @@ services:
       - myscalidraw-network
 
   frontend:
+    image: ghcr.io/lkgiovani/myscalidraw-frontend:main
     pull_policy: always
-    build:
-      context: ./front-end
-      dockerfile: Dockerfile
-      args:
-        - VITE_API_BASE_URL=${VITE_API_BASE_URL}
     container_name: myscalidraw-frontend
     ports:
       - "5173:5173"
