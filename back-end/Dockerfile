@@ -4,7 +4,7 @@ WORKDIR /app
 
 RUN apk add --no-cache git
 
-COPY back-end/go.mod back-end/go.sum ./
+COPY ./go.mod ./go.sum ./
 RUN go mod download
 
 COPY . .

@@ -49,8 +49,9 @@ services:
 
   backend:
     build:
-      context: .
-      dockerfile: ./back-end/Dockerfile
+      context: ./back-end
+      dockerfile: Dockerfile
+
     container_name: myscalidraw-backend
     ports:
       - "8181:8181"
