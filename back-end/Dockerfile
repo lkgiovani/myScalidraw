@@ -7,7 +7,7 @@ RUN apk add --no-cache git
 COPY back-end/go.mod back-end/go.sum ./
 RUN go mod download
 
-COPY back-end/ .
+COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/main.go
 
