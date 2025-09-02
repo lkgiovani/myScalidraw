@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-    tags:
-      - "v*.*.*"
-  pull_request:
 
 # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#permissions
 permissions: write-all
@@ -52,7 +49,6 @@ jobs:
           cache-binary: false
 
       - name: Login to GHCR
-        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -66,7 +62,7 @@ jobs:
           file: ./front-end/Dockerfile
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
