@@ -77,6 +77,8 @@ services:
     image: ghcr.io/lkgiovani/myscalidraw-frontend:main
     pull_policy: always
     container_name: myscalidraw-frontend
+    environment:
+      - BACKEND_BASE_URL=${BACKEND_BASE_URL}
     ports:
       - "5173:5173"
     depends_on:
