@@ -1,12 +1,12 @@
-package repository
+package file_repository
 
 import (
-	"myScalidraw/internal/domain/models"
+	"myScalidraw/internal/domain/models/file_model"
 )
 
 type FileRepository interface {
-	GetFileSystem() []models.FileItem
-	GetFileByID(id string) *models.FileItem
+	GetFileSystem() []file_model.FileItem
+	GetFileByID(id string) *file_model.FileItem
 	SaveFile(id string, content string) error
 	GetFileContent(id string) (string, error)
 	UploadFile(id string, content []byte) error
