@@ -1,4 +1,4 @@
-package models
+package file_model
 
 type FileItem struct {
 	ID           string      `json:"id"`

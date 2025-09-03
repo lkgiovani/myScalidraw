@@ -4,15 +4,15 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
-
-	"go.uber.org/fx"
-
 	"myScalidraw/infra/config/environment"
 	"myScalidraw/infra/database"
 	"myScalidraw/internal/delivery/httpserver"
-	"myScalidraw/internal/domain/models"
+	"myScalidraw/internal/domain/models/file_model"
+	"myScalidraw/internal/domain/models/user_model"
 	"myScalidraw/pkg/projectError"
+	"net/http"
+
+	"go.uber.org/fx"
 )
 
 func RegisterFiberServerHooks(
@@ -52,7 +52,11 @@ func RegisterDatabaseHooks(
 				config.DB.URL_DB)
 
 			log.Println("Running automatic migrations...")
-			if err := db.AutoMigrate(&models.FileMetadata{}); err != nil {
+			if err := db.AutoMigrate(
+				&file_model.FileMetadata{},
+				&user_model.User{},
+				&user_model.UserFilePermission{},
+			); err != nil {
 				return fmt.Errorf("failed to execute migrations: %w", err)
 			}
 			log.Println("Migrations completed successfully")

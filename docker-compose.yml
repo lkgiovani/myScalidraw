@@ -48,7 +48,10 @@ services:
     command: server /data --console-address ":${MINIO_CONSOLE_PORT}"
 
   backend:
-    image: ghcr.io/lkgiovani/myscalidraw:main
+    # image: ghcr.io/lkgiovani/myscalidraw:main
+    build:
+      context: ./back-end
+      dockerfile: Dockerfile
     pull_policy: always
     container_name: myscalidraw-backend
     ports:
@@ -74,7 +77,10 @@ services:
       - myscalidraw-network
 
   frontend:
-    image: ghcr.io/lkgiovani/myscalidraw-frontend:main
+    # image: ghcr.io/lkgiovani/myscalidraw-frontend:main
+    build:
+      context: ./front-end
+      dockerfile: Dockerfile
     pull_policy: always
     container_name: myscalidraw-frontend
     environment:

@@ -1,4 +1,4 @@
-package impl
+package file_repository
 
 import (
 	"encoding/json"
@@ -8,18 +8,18 @@ import (
 
 	"myScalidraw/infra/database"
 	"myScalidraw/infra/storage"
-	"myScalidraw/internal/domain/models"
-	"myScalidraw/internal/domain/repository"
+
+	"myScalidraw/internal/domain/models/file_model"
 )
 
 type FileRepositoryMinioImpl struct {
-	fileSystem   []models.FileItem
+	fileSystem   []file_model.FileItem
 	minioClient  *storage.MinIO
-	metadataRepo repository.FileMetadataRepository
+	metadataRepo FileMetadataRepository
 	db           *database.DB
 }
 
-func NewFileRepositoryMinio(minioClient *storage.MinIO, db *database.DB, metadataRepo repository.FileMetadataRepository) *FileRepositoryMinioImpl {
+func NewFileRepositoryMinio(minioClient *storage.MinIO, db *database.DB, metadataRepo FileMetadataRepository) FileRepository {
 	repo := &FileRepositoryMinioImpl{
 		minioClient:  minioClient,
 		metadataRepo: metadataRepo,
@@ -35,13 +35,13 @@ func (r *FileRepositoryMinioImpl) loadFileSystem() {
 	metadata, err := r.metadataRepo.GetAll()
 	if err != nil {
 
-		r.fileSystem = []models.FileItem{
+		r.fileSystem = []file_model.FileItem{
 			{
 				ID:         "drafts",
 				Name:       "Drafts",
 				IsFolder:   true,
 				IsExpanded: true,
-				Children:   []models.FileItem{},
+				Children:   []file_model.FileItem{},
 			},
 		}
 		return
@@ -50,13 +50,13 @@ func (r *FileRepositoryMinioImpl) loadFileSystem() {
 	r.fileSystem = metadata.ToFileSystem()
 }
 
-func (r *FileRepositoryMinioImpl) GetFileSystem() []models.FileItem {
+func (r *FileRepositoryMinioImpl) GetFileSystem() []file_model.FileItem {
 
 	r.loadFileSystem()
 	return r.fileSystem
 }
 
-func (r *FileRepositoryMinioImpl) findFileByID(items []models.FileItem, id string) *models.FileItem {
+func (r *FileRepositoryMinioImpl) findFileByID(items []file_model.FileItem, id string) *file_model.FileItem {
 	for i := range items {
 		if items[i].ID == id {
 			return &items[i]
@@ -70,7 +70,7 @@ func (r *FileRepositoryMinioImpl) findFileByID(items []models.FileItem, id strin
 	return nil
 }
 
-func (r *FileRepositoryMinioImpl) GetFileByID(id string) *models.FileItem {
+func (r *FileRepositoryMinioImpl) GetFileByID(id string) *file_model.FileItem {
 	metadata, err := r.metadataRepo.GetByID(id)
 	if err != nil {
 		return r.findFileByID(r.fileSystem, id)
@@ -91,7 +91,7 @@ func (r *FileRepositoryMinioImpl) GetFileByID(id string) *models.FileItem {
 	return &item
 }
 
-func (r *FileRepositoryMinioImpl) buildItemPath(metadata *models.FileMetadata) string {
+func (r *FileRepositoryMinioImpl) buildItemPath(metadata *file_model.FileMetadata) string {
 	var pathParts []string
 	current := metadata
 
@@ -254,7 +254,7 @@ func (r *FileRepositoryMinioImpl) RenameFile(id string, newName string) error {
 	return nil
 }
 
-func (r *FileRepositoryMinioImpl) updateChildPaths(child *models.FileMetadata, parentPath string) {
+func (r *FileRepositoryMinioImpl) updateChildPaths(child *file_model.FileMetadata, parentPath string) {
 
 	newPath := parentPath + "/" + child.Name
 	child.StoragePath = newPath

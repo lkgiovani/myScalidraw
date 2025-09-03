@@ -2,29 +2,28 @@ package file
 
 import (
 	"encoding/json"
-
-	"myScalidraw/internal/domain/models"
-	"myScalidraw/internal/domain/repository"
+	"myScalidraw/internal/domain/models/file_model"
+	"myScalidraw/internal/domain/repository/file_repository"
 )
 
 type FileUseCase struct {
-	fileRepo     repository.FileRepository
-	metadataRepo repository.FileMetadataRepository
+	fileRepo     file_repository.FileRepository
+	metadataRepo file_repository.FileMetadataRepository
 }
 
-func NewFileUseCase(fileRepo repository.FileRepository, metadataRepo repository.FileMetadataRepository) *FileUseCase {
+func NewFileUseCase(fileRepo file_repository.FileRepository, metadataRepo file_repository.FileMetadataRepository) *FileUseCase {
 	return &FileUseCase{
 		fileRepo:     fileRepo,
 		metadataRepo: metadataRepo,
 	}
 }
 
-func (uc *FileUseCase) GetFiles() []models.FileItem {
+func (uc *FileUseCase) GetFiles() []file_model.FileItem {
 
 	metadata, err := uc.metadataRepo.GetAll()
 	if err != nil {
 
-		return []models.FileItem{}
+		return []file_model.FileItem{}
 	}
 
 	flatList := metadata.ToFlatList()
@@ -32,7 +31,7 @@ func (uc *FileUseCase) GetFiles() []models.FileItem {
 	return flatList
 }
 
-func (uc *FileUseCase) GetFileByID(id string) (*models.FileItem, error) {
+func (uc *FileUseCase) GetFileByID(id string) (*file_model.FileItem, error) {
 	file := uc.fileRepo.GetFileByID(id)
 	if file == nil {
 		return nil, nil
@@ -55,7 +54,7 @@ func (uc *FileUseCase) SaveFile(id string, content string) error {
 	return uc.fileRepo.SaveFile(id, content)
 }
 
-func (uc *FileUseCase) CreateFile(metadata *models.FileMetadata, content []byte) error {
+func (uc *FileUseCase) CreateFile(metadata *file_model.FileMetadata, content []byte) error {
 	err := uc.metadataRepo.Create(metadata)
 	if err != nil {
 		return err

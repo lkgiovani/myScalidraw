@@ -1,4 +1,4 @@
-package models
+package file_model
 
 import (
 	"strings"
@@ -40,7 +40,6 @@ func (list FileMetadataList) ToFileSystem() []FileItem {
 	itemMap := make(map[string]*FileItem)
 	metadataMap := make(map[string]*FileMetadata)
 
-	// Primeiro passo: converter todos os metadados para FileItem
 	for _, metadata := range list {
 		if metadata == nil {
 
@@ -49,7 +48,6 @@ func (list FileMetadataList) ToFileSystem() []FileItem {
 
 		item := metadata.ToFileItem()
 
-		// Normalizar path se estiver com problema
 		if strings.Contains(item.Path, "//") {
 			item.Path = strings.ReplaceAll(item.Path, "//", "/")
 
@@ -100,25 +98,9 @@ func (list FileMetadataList) ToFlatList() []FileItem {
 
 		}
 
-		// Adicionar à lista plana
 		items = append(items, item)
 
 	}
 
 	return items
-}
-
-func joinPath(parts []string) string {
-	if len(parts) == 0 {
-		return ""
-	}
-	if len(parts) == 1 {
-		return parts[0]
-	}
-
-	result := parts[0]
-	for i := 1; i < len(parts); i++ {
-		result += "/" + parts[i]
-	}
-	return result
 }
