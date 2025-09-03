@@ -1,7 +1,6 @@
 FROM node:22-alpine AS builder
 WORKDIR /frontend
 COPY package.json package-lock.json ./
-COPY .env.production .env
 RUN npm install
 COPY . ./
 RUN npm run build

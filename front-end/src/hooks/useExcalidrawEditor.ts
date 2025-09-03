@@ -3,8 +3,7 @@ import { useFileStore } from "@/stores/fileStore";
 import { useFile, useSaveFile } from "@/hooks/useFileApi";
 import { toast } from "sonner";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ExcalidrawData = any;
+type ExcalidrawData = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 interface FileData {
   content?: string;
@@ -29,7 +28,6 @@ export function useExcalidrawEditor() {
   const [currentFileId, setCurrentFileId] = useState<string | null>(null);
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Parse file data and update excalidraw state
   useEffect(() => {
     if (autoSaveTimeoutRef.current) {
       clearTimeout(autoSaveTimeoutRef.current);
@@ -97,7 +95,6 @@ export function useExcalidrawEditor() {
     }
   }, [fileData, selectedFileId, currentFileId]);
 
-  // Auto-save function
   const autoSaveRef =
     useRef<
       (elements: ExcalidrawData, appState: ExcalidrawData) => Promise<void>
@@ -136,7 +133,6 @@ export function useExcalidrawEditor() {
     }
   };
 
-  // Handle changes in excalidraw
   const handleChange = useCallback(
     (elements: ExcalidrawData, appState: ExcalidrawData) => {
       if (!selectedFileId || selectedFileId !== currentFileId) {
@@ -159,7 +155,6 @@ export function useExcalidrawEditor() {
     [selectedFileId, currentFileId]
   );
 
-  // Manual save function
   const handleSave = useCallback(() => {
     if (!selectedFileId || !hasUnsavedChanges || !excalidrawData) return;
 
@@ -184,7 +179,6 @@ export function useExcalidrawEditor() {
     );
   }, [selectedFileId, excalidrawData, hasUnsavedChanges, saveFileMutation]);
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
@@ -204,7 +198,6 @@ export function useExcalidrawEditor() {
     };
   }, [handleSave]);
 
-  // Cleanup on file change
   useEffect(() => {
     return () => {
       if (autoSaveTimeoutRef.current) {

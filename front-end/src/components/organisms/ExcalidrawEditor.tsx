@@ -25,12 +25,10 @@ export function ExcalidrawEditor() {
     handleSave,
   } = useExcalidrawEditor();
 
-  // Loading state
   if (isLoadingFile) {
     return <LoadingState message="Carregando arquivo..." />;
   }
 
-  // No file selected
   if (!selectedFile) {
     return (
       <EmptyState
@@ -46,7 +44,6 @@ export function ExcalidrawEditor() {
     );
   }
 
-  // Folder selected
   if (selectedFile.type === "folder") {
     return (
       <EmptyState
@@ -62,7 +59,6 @@ export function ExcalidrawEditor() {
     );
   }
 
-  // Main editor view
   return (
     <div className="flex-1 bg-explorer-main relative">
       {/* Save button */}
